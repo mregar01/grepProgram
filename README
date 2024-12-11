@@ -1,0 +1,370 @@
+Gerp by Max Regardie and Nikola Muromcew
+spotify: @n1k0la 
+
+README
+
+Program Purpose:
+This program is meant to act as a word search engine such that when given a 
+directory of files, the user can provide a word and recieve, in a text tile,
+all of the lines and their locations where that word appears 
+in the current directory. 
+
+
+Acknowledgements:
+-Thank you to cpp reference for the guidance on string class and using
+the isAlphaNum() function.
+-Thank you to the hashExample.cpp file for showing us how to use the
+functional c++ library. So sick
+
+
+Files:
+    main.cpp: this files calls upon an instance of the gerp class to 
+            make an executable program for the user to interact with.
+    gerp.h: Interface for our gerp class, which handles the command loop
+            and the ways that a user can interact with the program. This
+            class opperates the "Query? " loop, and uses the other classes
+            to open the given directory, index it, and then calls upon 
+            fileHash to perform the searches.
+    gerp.cpp: Implementation of the gerp class. 
+    fileHash.h: Interface of fileHash class this class is the heart of our 
+                program. It deals with indexing directory data and then 
+                sorting each word into two hashtables (for insensitive
+                and sensitive searchs). This class searches the tables for a 
+                given word, provided via the gerp class from the user, 
+                and prints it. 
+    fileHash.cpp: Implementation of the fileHash class. The beast of this class
+                is the hashWord function, which takes a word, hashes it, and 
+                stores in the appropriate array. The other functions, in a 
+                sense, funnel the file data towards this function.
+    
+    indexTree.h: Interface for indexTree class, which takes a directory and 
+                uses the FSTree class to make an FSTree of the directory.
+                The class then creates all file paths for the directory
+                and stores them as a member variable, which fileHash is
+                able to access. 
+                ee.h
+    indexTree.cpp: Implementation of the indexTree class. Traverses an 
+                FSTree and stores file paths for a directory..cpp
+
+    the_test: Directory created to initially test indexTree (correct file
+                paths and such) and then to test fileHash (correct number
+                of buckets, correct amount of instances of each line per
+                bucket).est:
+
+    the_testie: Another testing Directory made specifically for fileHash
+                each file has typed out number, one through ten, which made
+                it very simple to check that each word should have two 
+                instances and that there should only be ten words in total.
+                We used this directory in combination with print statements
+                to test fileHash.
+    
+    output.txt: our output file used for testing ./gerp 
+
+    ref_output.txt: output file used when running ./the-gerp
+
+    output_sorted.txt: output.txt but sorted, so diff could be used
+    *right now its empty bc we were unable to submit the file due to its
+    size*
+
+    ref_output_sorted.txt: ref_output.txt but sorted so diff could be sued
+    *right now its empty bc we were unable to submit the file due to its
+    size*
+    
+    commands.txt: file that holds commands to check our implementation against
+    the reference
+
+Compile:
+    Compile using: make gerp
+    Run using: ./gerp [inputfile] [outputfile]
+
+Architectural Overview:
+    This program consists of three classes: the IndexTree class digests a 
+    directory to make an array of files and their paths (as a string). 
+    This array is then used by the fileHash class as the paths are 
+    stored in the hashtable along with the physical file lines. FileHash
+    takes each file, looks at each line, and every word in the line and 
+    passes the words through a hashfunction to sort them into an array.
+    The array stores PathLines, a struct that holds the word of choice, 
+    the path to the file location, the line where the word is found, and
+    the line number. 
+    The gerp class opens the input and output files, which are provided
+    via command loop, passes the files to FileHash, where they are
+    opened and indexed by calling IndexFiles within File Hash. Gerp also
+    runs a query loop for the user. This query loop calls upon the "doGerp"
+    function in FileHash, which takes the desired word to be searched and
+    searches either the sensitive-hash or insensitive-hash table, the choice
+    is provided from the gerp class. The fileHash class also prints the 
+    path, path line, and line to the output file if/when the word is found
+    in the directory.
+
+Data Structures and Algorithms: 
+    The FSTree structure is incredibly important to our program. By sorting
+    a directory into a tree where the leaves are files, we are able to 
+    "traverse" the directory's files using the structure of the tree.
+    The file paths that are gleaned from the FSTree are stored in a namePath
+    struct which holds the file name and the path to the file via
+    directory and subdirectories. These namePaths are stored in an array,
+    which FileHash uses to open and index each file.
+
+    The FileHash also uses a PathLine struct, which holds a word, the path
+    to a file, the line where the word is found, and the number of the line.
+    The word of the PathLine is "hashed" and the pathLine is then stored
+    at an hashed index. This way all instances of the word are stored in the
+    same spot of the hashtable along with the associated data which is 
+    needed for printing.
+
+    The hashtable itself is an std::array of size 100000 that holds vectors 
+    of pathLines. This size was chosen to minimize chaining. Since a bucket can 
+    hold more than one specific word, when searching for a word the bucket
+    has to be looped through to print all pathLines with the same word. By 
+    increasing our array size, we reduced the amount of chaining happening, 
+    so that less words hash to the same bucket in the table.
+    
+    The hashing itself is done by using the functional library standard 
+    hash function to assign an integer value to a string. That value is then
+    mod-ed by the array size and the result is the index within the array that
+    the word, and the associate pathLine, are stored. The same word yields the
+    same hashed integer each time, something we confirmed at the initial stages
+    of this project.
+
+    To find a word within the directory, that word is hashed and mod-ed. The 
+    resulting index is where all instances of that word are found in the 
+    hashtable. Once at the proper bucket, which is a vector of pathlines, 
+    the bucket is looped through to find all instances of the word within the
+    bucket, since more than one specific word can be eventually hashed to the
+    same bucket because of the mod part of the hashing. If an instance of the
+    word is found, it is printed using a helper function which pieces together
+    the path, the line number, and the line. 
+
+Testing:
+    We had many different ways of testing the program as we worked. Initially,
+    for stringprocessing and treetraversal, we created testing mains to make
+    sure our implementation was correct. we took input from cin and used print
+    statements to test those sections
+    
+    For the larger part of the project, we used our main to check our work as
+    we went. Every time we wrote a new function, we would call it in main, and
+    either use print statements or assert statements to ensure that it was 
+    working together. We repeated this for every function we wrote. When it came
+    time to put all of the functions together near the end of the project,
+    we continued using our main to test with different cases. We would test
+    using the main and send our results to cout, so we could see exactly what 
+    results we were getting for each step of the project. Our main challenge
+    was building the hash table. We had to do a lot of testing on the hash 
+    table to make sure that every word was being stored in the correct place. 
+    We tested to make sure that when you hash a word, that specific word will 
+    always end up in the same bucket. This was vital to our project to make
+    sure that when searching for a word, we can search in the correct bucket
+    always. We also did a lot of testinfg with different variations of words
+    and charachters. We would consult the reference to see how it took in
+    words with non alphanumeric characters in it, and update our implementation
+    to match. 
+
+    Our main testing was using diff. We wrote a file called commands.txt, which
+    has a list of commands that can all be run on gerp. Then we would send the
+    results from our implementation to one text file and send the references
+    results to another. Then we would sort both files and run diff. Once there
+    were no differences, we felt good that our implementation was working.
+    
+    The first edge case we thought of was dealing with case insensitive search.
+    The way we decided to deal with this was by creating two seperate hash
+    tables. For the case sensitive hash table, we simply added all words as
+    they appeared in the text files. For the insensitive hash table we 
+    first made every word lowercase, then we added them to the hash table like
+    that.
+
+    Another edge case was how to open the new output file when "@f" is entered.
+    We struggled with finding a way to do this but landed on creating a private
+    member variable which was an instance of an ostream. Then we would open
+    a new ostream if @f was called and assign it to the member variable.
+
+
+
+
+Gerp by Max Regardie and Nikola Muromcew
+spotify: @n1k0la 
+
+README
+
+Program Purpose:
+This program is meant to act as a word search engine such that when given a 
+directory of files, the user can provide a word and recieve, in a text tile,
+all of the lines and their locations where that word appears 
+in the current directory. 
+
+
+Acknowledgements:
+-Thank you to cpp reference for the guidance on string class and using
+the isAlphaNum() function.
+-Thank you to the hashExample.cpp file for showing us how to use the
+functional c++ library. So sick
+
+Files:
+    main.cpp: this files calls upon an instance of the gerp class to 
+            make an executable program for the user to interact with.
+    gerp.h: Interface for our gerp class, which handles the command loop
+            and the ways that a user can interact with the program. This
+            class opperates the "Query? " loop, and uses the other classes
+            to open the given directory, index it, and then calls upon 
+            fileHash to perform the searches.
+    gerp.cpp: Implementation of the gerp class. 
+    fileHash.h: Interface of fileHash class this class is the heart of our 
+                program. It deals with indexing directory data and then 
+                sorting each word into two hashtables (for insensitive
+                and sensitive searchs). This class searches the tables for a 
+                given word, provided via the gerp class from the user, 
+                and prints it. 
+    fileHash.cpp: Implementation of the fileHash class. The beast of this class
+                is the hashWord function, which takes a word, hashes it, and 
+                stores in the appropriate array. The other functions, in a 
+                sense, funnel the file data towards this function.
+    
+    indexTree.h: Interface for indexTree class, which takes a directory and 
+                uses the FSTree class to make an FSTree of the directory.
+                The class then creates all file paths for the directory
+                and stores them as a member variable, which fileHash is
+                able to access. 
+                ee.h
+    indexTree.cpp: Implementation of the indexTree class. Traverses an 
+                FSTree and stores file paths for a directory..cpp
+
+    the_test: Directory created to initially test indexTree (correct file
+                paths and such) and then to test fileHash (correct number
+                of buckets, correct amount of instances of each line per
+                bucket).est:
+
+    the_testie: Another testing Directory made specifically for fileHash
+                each file has typed out number, one through ten, which made
+                it very simple to check that each word should have two 
+                instances and that there should only be ten words in total.
+                We used this directory in combination with print statements
+                to test fileHash.
+    
+    output.txt: our output file used for testing ./gerp 
+
+    ref_output.txt: output file used when running ./the-gerp
+
+    output_sorted.txt: output.txt but sorted, so diff could be used
+
+    ref_output_sorted.txt: ref_output.txt but sorted so diff could be sued
+    *Didnt include this bc of massive file size!!!*
+    
+    commands.txt: file that holds commands to check our implementation against
+    the reference
+
+Compile:
+    Compile using: make gerp
+    Run using: ./gerp [inputfile] [outputfile]
+
+Architectural Overview:
+    This program consists of three classes: the IndexTree class digests a 
+    directory to make an array of files and their paths (as a string). 
+    This array is then used by the fileHash class as the paths are 
+    stored in the hashtable along with the physical file lines. FileHash
+    takes each file, looks at each line, and every word in the line and 
+    passes the words through a hashfunction to sort them into an array.
+    The array stores PathLines, a struct that holds the word of choice, 
+    the path to the file location, the line where the word is found, and
+    the line number. 
+    The gerp class opens the input and output files, which are provided
+    via command loop, passes the files to FileHash, where they are
+    opened and indexed by calling IndexFiles within File Hash. Gerp also
+    runs a query loop for the user. This query loop calls upon the "doGerp"
+    function in FileHash, which takes the desired word to be searched and
+    searches either the sensitive-hash or insensitive-hash table, the choice
+    is provided from the gerp class. The fileHash class also prints the 
+    path, path line, and line to the output file if/when the word is found
+    in the directory.
+
+Data Structures and Algorithms: 
+    The FSTree structure is incredibly important to our program. By sorting
+    a directory into a tree where the leaves are files, we are able to 
+    "traverse" the directory's files using the structure of the tree.
+    The file paths that are gleaned from the FSTree are stored in a namePath
+    struct which holds the file name and the path to the file via
+    directory and subdirectories. These namePaths are stored in an array,
+    which FileHash uses to open and index each file.
+
+    The FileHash also uses a PathLine struct, which holds a word, the path
+    to a file, the line where the word is found, and the number of the line.
+    The word of the PathLine is "hashed" and the pathLine is then stored
+    at an hashed index. This way all instances of the word are stored in the
+    same spot of the hashtable along with the associated data which is 
+    needed for printing.
+
+    The hashtable itself is an std::array of size 100000 that holds vectors 
+    of pathLines. This size was chosen to minimize chaining. Since a bucket can 
+    hold more than one specific word, when searching for a word the bucket
+    has to be looped through to print all pathLines with the same word. By 
+    increasing our array size, we reduced the amount of chaining happening, 
+    so that less words hash to the same bucket in the table.
+    
+    The hashing itself is done by using the functional library standard 
+    hash function to assign an integer value to a string. That value is then
+    mod-ed by the array size and the result is the index within the array that
+    the word, and the associate pathLine, are stored. The same word yields the
+    same hashed integer each time, something we confirmed at the initial stages
+    of this project.
+
+    To find a word within the directory, that word is hashed and mod-ed. The 
+    resulting index is where all instances of that word are found in the 
+    hashtable. Once at the proper bucket, which is a vector of pathlines, 
+    the bucket is looped through to find all instances of the word within the
+    bucket, since more than one specific word can be eventually hashed to the
+    same bucket because of the mod part of the hashing. If an instance of the
+    word is found, it is printed using a helper function which pieces together
+    the path, the line number, and the line. 
+
+Testing:
+    We had many different ways of testing the program as we worked. Initially,
+    for stringprocessing and treetraversal, we created testing mains to make
+    sure our implementation was correct. we took input from cin and used print
+    statements to test those sections
+    
+    For the larger part of the project, we used our main to check our work as
+    we went. Every time we wrote a new function, we would call it in main, and
+    either use print statements or assert statements to ensure that it was 
+    working together. We repeated this for every function we wrote. When it came
+    time to put all of the functions together near the end of the project,
+    we continued using our main to test with different cases. We would test
+    using the main and send our results to cout, so we could see exactly what 
+    results we were getting for each step of the project. Our main challenge
+    was building the hash table. We had to do a lot of testing on the hash 
+    table to make sure that every word was being stored in the correct place. 
+    We tested to make sure that when you hash a word, that specific word will 
+    always end up in the same bucket. This was vital to our project to make
+    sure that when searching for a word, we can search in the correct bucket
+    always. We also did a lot of testinfg with different variations of words
+    and charachters. We would consult the reference to see how it took in
+    words with non alphanumeric characters in it, and update our implementation
+    to match. 
+
+    Our main testing was using diff. We wrote a file called commands.txt, which
+    has a list of commands that can all be run on gerp. Then we would send the
+    results from our implementation to one text file and send the references
+    results to another. Then we would sort both files and run diff. Once there
+    were no differences, we felt good that our implementation was working.
+    
+    The first edge case we thought of was dealing with case insensitive search.
+    The way we decided to deal with this was by creating two seperate hash
+    tables. For the case sensitive hash table, we simply added all words as
+    they appeared in the text files. For the insensitive hash table we 
+    first made every word lowercase, then we added them to the hash table like
+    that.
+
+    Another edge case was how to open the new output file when "@f" is entered.
+    We struggled with finding a way to do this but landed on creating a private
+    member variable which was an instance of an ostream. Then we would open
+    a new ostream if @f was called and assign it to the member variable.
+
+    Our testing got #real once we started using valgrind. We saw that we were
+    getting many "invalid reads" and "invalid writes", which informed us that
+    our use of stack vs heap memory was something to rethink. We then moved
+    our hashtables to the heap, instead of keeping everything on the stack. 
+    This conclusion took a bit of time to reach, since we also realized that
+    when adding to an initially empty bucket, an instance of a vector had to 
+    be declared.
+
+
+
+
